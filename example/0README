@@ -1,0 +1,9 @@
+
+Test it with something like 
+
+  plot -cc < matrix.dat
+
+(and then press the 'c' and then the 
+'n' key. Quit the program by pressing
+the 'q' key).
+

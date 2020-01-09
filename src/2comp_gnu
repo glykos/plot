@@ -1,0 +1,26 @@
+
+
+GNU/Linux
+---------
+
+gcc -m64 -DGRA -D_FILE_OFFSET_BITS=64 -fopenmp -IYgl-4.2/X11/ -Wall -pedantic -O2 -c plot.c
+gfortran -m64 -DGRA -D_FILE_OFFSET_BITS=64 -fopenmp -IYgl-4.2/X11/ -Wall -pedantic -O2 plot.o -L. -lYgl -lXext -lX11 -llapack -lblas -lm
+
+gcc -DGRA -D_FILE_OFFSET_BITS=64 -I/usr/X11R6/include/X11 -Wall -pedantic -O -c plot.c
+g77 -DGRA -D_FILE_OFFSET_BITS=64 -Wall -pedantic -O plot.o -L./ -lYgl -L/usr/X11R6/lib -lXext -lX11 -lm
+
+
+
+
+
+
+Cross-compilation for MacOSX (ignore site-specific paths) :
+-----------------------------------------------------------
+
+i686
+----
+/usr/i686-apple-darwin9/bin/i686-apple-darwin9-gcc -DGRA -D_FILE_OFFSET_BITS=64 -I/usr/i686-apple-darwin9/lib/gcc/i686-apple-darwin9/4.0.1/include -IYgl-4.2_MachO_i686  -L/usr/i686-apple-darwin9/usr/X11R6/lib -LYgl-4.2_MachO_i686 plot.c -lYgl -lXext -lX11 -llapack -lblas -lm
+
+ppc
+---
+/usr/powerpc-apple-darwin9/bin/powerpc-apple-darwin9-gcc -DGRA -D_FILE_OFFSET_BITS=64 -I/usr/powerpc-apple-darwin9/lib/gcc/powerpc-apple-darwin9/4.0.1/include -IYgl-4.2_MachO_ppc/  -L/usr/powerpc-apple-darwin9/usr/X11R6/lib -LYgl-4.2_MachO_ppc  plot.c -lYgl -lXext -lX11 -llapack -lblas -lm

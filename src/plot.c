@@ -776,6 +776,10 @@ char	*argv[];
 	      }
           }
 
+        if ( N > 5000 )
+        {   
+            dots = 1;
+        }
 
 	if ( DRAW_HISTOGRAM == NO )
 		two_columns();
@@ -1070,6 +1074,12 @@ char	*argv[];
 
 
 
+        if ( N > 5000 )
+        {   
+            dots = 1;
+        }
+
+
 	if ( LOGLOG == YES )
 	  {
 	    for ( i=0 ; i < N ; i++ )
@@ -1291,6 +1301,11 @@ char	*argv[];
                         }
 		}
 
+
+        if ( N > 5000 )
+        {   
+            dots = 1;
+        }
 
 	if ( LOGLOG == YES )
 	  {
@@ -1600,6 +1615,10 @@ char	*argv[];
 
 	}
 
+        if ( N > 5000 )
+        {   
+            dots = 1;
+        }
 
 	if ( LOGLOG == YES )
 	  {
@@ -1677,7 +1696,7 @@ char	*argv[];
 						FIRST_REDRAW = NO;
 				}
 			if ( dev == QKEY )
-				exit( 1 );
+				exit( 0 );
 			if ( dev == PKEY )
 			      {
 				gl2ppm("plot.ppm");
@@ -2019,7 +2038,7 @@ char	*argv[];
 						FIRST_REDRAW = NO;
 				}
 			if ( dev == QKEY )
-				exit( 1 );
+				exit( 0 );
 			if ( dev == PKEY )
 				gl2ppm("plot.ppm");
 			if ( dev == DKEY )
@@ -2300,7 +2319,7 @@ char	*argv[];
 						FIRST_REDRAW = NO;
 				}
 			if ( dev == QKEY )
-				exit( 1 );
+				exit( 0 );
 			if ( dev == PKEY )
 				gl2ppm("plot.ppm");
 			if ( dev == DKEY )
@@ -5017,7 +5036,7 @@ void contours()
 					qreset();
 				}
 			if ( dev == QKEY )
-				exit( 1 );
+				exit( 0 );
 			if ( dev == PKEY )
 				gl2ppm("plot.ppm");
 			if ( dev == LEFTMOUSE && IN_ZOOM == NO )

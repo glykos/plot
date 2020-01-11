@@ -2598,6 +2598,7 @@ void	two_columns()
 		if ( x[i] < x[i-1] )
 			{
 				DRAW_DENSITY = YES;
+                                dots = YES;
 				return;
 			}
 			
@@ -3036,7 +3037,7 @@ void 	do_plot_xy()
             if ( i < N )
                 arcxf( x[i], y[i], 4.0*dx/(right-left), 4.0*dy/(top-bottom), 0, 3600 );
             
-            if ( dots == YES ) 
+            if ( dots == NO ) 
             {
                 i = 0;
                 while ( x[i] < minx && i < N )
@@ -3644,7 +3645,7 @@ void 	do_draw_density()
         mapcolor( 200  ,243, 146, 46 );
 	color( 200 );
 
-        if ( dots == YES )
+        if ( dots == NO )
         {
 	linewidth( 1 );
 	move2( x[0], y[0] );
@@ -4246,7 +4247,7 @@ void 	do_plot_two()
 	for ( i=0 ; i < N ; i++ )
 		arcxf( x[i], y[i], 4.0*dx/(right-left), 4.0*dy/(top-bottom), 0, 3600 );
         
-        if ( dots == YES )
+        if ( dots == NO )
         {
 	move2( x[0], y[0] );
 	for ( i=1 ; i < N ; i++ )
@@ -4310,7 +4311,7 @@ void 	do_plot_two()
 
         
         
-        if ( dots == YES )
+        if ( dots == NO )
         {
 
                 i = 0;
@@ -4399,7 +4400,7 @@ void 	do_plot_two()
             if ( i < N )
                 arcxf( x[i], y[i], 4.0*dx/(right-left), 4.0*dy/(top-bottom), 0, 3600 );
             
-            if ( dots == YES ) 
+            if ( dots == NO ) 
             {
                 i = 0;
                 while ( x[i] < minx && i < N )

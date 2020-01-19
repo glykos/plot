@@ -2,6 +2,38 @@
 Lightweight plotting program for GNU/Linux and MacOS that can read standard input and can be used in unix pipelines
 ____________________________________________________________________
 
+
+## Introduction
+
+`plot` is a small, simple and straightforward plotting program for GNU/Linux and
+MacOSX. `plot` may be useful to people that love working from within the unix
+shell, hate herding the mouse around, and need an extremely lightweight
+plotting program that can read standard input and can be used in unix
+pipelines. The program can do :
+  * Simple x-y plots (possibly with a column specification)
+  * Kolmogorov-Zurbenko filtering
+  * Zooming-in, zooming-out, moving around the plot
+  * x-y plots with a standard deviations
+  * log and log-log plots
+  * Histograms and cumulative histograms
+  * Overlaying two x-y plots
+  * Scatter plots
+  * Overlaying two scatter plots
+  * Visually stepping through scatter plots
+  * Scatter plots of categorical data
+  * Density distribution of scatter plots
+  * Matrix plotting
+  * Matrix plotting with contours
+
+Full documentation is available via https://utopia.duth.gr/glykos/plot/
+
+## Screenshots
+
+![collage](https://user-images.githubusercontent.com/39924257/72683119-2d468080-3add-11ea-81c3-66d2dd56c3fc.png)
+
+
+## Installation 
+
 0. WINDOZE
 
    If you work with a windoze machine, forget it. It won't happen.
@@ -62,6 +94,6 @@ ____________________________________________________________________
 
 4. ALL USERS WITH A WORKING EXECUTABLE
 
-   This program has documentation !
+   This program has documentation !!! Get it at :  https://utopia.duth.gr/glykos/plot/
 ____________________________________________________________________
 

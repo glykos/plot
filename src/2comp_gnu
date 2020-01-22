@@ -11,8 +11,11 @@ Once you have Ygl installed, it should be downhill :
 GNU/Linux
 ---------
 
-gcc -DGRA -D_FILE_OFFSET_BITS=64 -fopenmp -I/usr/include/X11 -Wall -pedantic -O ../plot.c -L./ -lYgl -L/usr/X11R6/lib -lXext -lX11 -lm
 
+gcc -DGRA -D_FILE_OFFSET_BITS=64 -fopenmp -I/usr/include/X11 -Wall -pedantic -O plot.c -L./ -lYgl -L/usr/X11R6/lib -lXext -lX11 -lm
+
+
+(you should change the paths for libraries and include files)
 
 
 

@@ -56,6 +56,8 @@
 #include <time.h>
 #include <omp.h>
 
+#define VERSION "1.201"
+
 #define	NO	0
 #define	YES	1
 #define	SMALLM	1000.0
@@ -223,6 +225,19 @@ char	*argv[];
 	int	i, k;
 
 
+
+	if ( argc >= 1 )
+	{
+	for ( i=1 ; i < argc ; i++ )
+	{
+		if ( strncasecmp( argv[i], "-V", 2 ) == 0 && strlen( argv[i] ) == 2 )
+		{
+			printf("This is plot v.%s\n", VERSION );
+                        printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
+                        exit( 0 );
+		}
+	}
+	}
 
 	if ( argc >= 1 )
 	{

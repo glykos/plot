@@ -213,6 +213,10 @@ int	PLOT_LIGHTGRID = 0;
 int     DATA_SET = -1;
 int     HIST_EXACT = 0;
 
+int     RUNAWK = NO;
+
+
+
 
 int main(argc,argv)
 int  	argc;
@@ -451,6 +455,9 @@ char	*argv[];
 			else
 			if ( 	strncasecmp( argv[1], "-K", 2 ) == 0 )		/* define columns from the command line */
 				{
+                                        if ( strncmp( argv[1], "-K", 2 ) == 0 )
+                                            RUNAWK = YES;
+
 					if ( strlen( argv[1] ) <= 2 || strlen( argv[1] ) >= 6 )
 					{
 					printf("\033[31m\033[1mColumn definition is wrong.\033[0m\n");
@@ -611,14 +618,77 @@ char	*argv[];
             PLOT_LIGHTGRID = 1;
 
 
-	while( fgets( line, 499999, stdin ) != NULL )
-	{
-	if ( (columns = sscanf( line, "%f %f %f %f", &junk, &junk, &junk, &junk)) >= 1 )
-		break;
-	
-	printf("\033[37m\033[1mCaution: header line skipped:\033[0m %s", line );	
-	}	
+        if ( RUNAWK == NO )
+        {
+            i = 0;
+            while( fgets( line, 499999, stdin ) != NULL )
+            {
+            if ( (columns = sscanf( line, "%f %f %f %f", &junk, &junk, &junk, &junk)) >= 1 )
+                    break;
+            
+            i++;
+            if ( i < 2 )
+            printf("\033[37m\033[1mCaution: header line skipped:\033[0m %s", line );	
+            }	
+            if ( i > 1 )
+                printf("\033[37m\033[1m     ... followed by %d more lines.\033[0m\n", i );
+        }
 
+        /* 
+         * Attempt to deal with lazy users that have non-numerical columns
+         *
+         */
+
+        if ( (HAVE_COL > 0 && columns < HAVE_COL && RUNAWK == NO) || (HAVE_COL > 0 && RUNAWK == YES) )
+        {
+            char    scall[1000];
+            int     sysret;
+
+            if ( RUNAWK == NO )
+            {
+                printf("\033[32m\033[1mAre you feeding plot non-numerical data ?!? Beware ...\033[0m\n");
+                rewind( stdin );
+            }
+            else
+            {
+                printf("\033[32m\033[1mWill attempt to use awk to select columns. This may not go as planned ...\033[0m\n");
+            }
+
+            if ( HAVE_COL == 1 )
+            {
+                sprintf( scall, "awk '{print $%d}' /dev/stdin > /tmp/plot_temp_BbkuJ0IMQ0I3eTM8jv4TeQ1YjwoFhbM", COL1 ); 
+                COL1 = 1;
+            }
+            if ( HAVE_COL == 2 )
+            {
+                sprintf( scall, "awk '{print $%d,$%d}' /dev/stdin > /tmp/plot_temp_BbkuJ0IMQ0I3eTM8jv4TeQ1YjwoFhbM", COL1, COL2 ); 
+                COL1 = 1;
+                COL2 = 2;
+            }
+            if ( HAVE_COL == 3 )
+            {
+                sprintf( scall, "awk '{print $%d,$%d,$%d}' /dev/stdin > /tmp/plot_temp_BbkuJ0IMQ0I3eTM8jv4TeQ1YjwoFhbM", COL1, COL2, COL3 ); 
+                COL1 = 1;
+                COL2 = 2;
+                COL2 = 3;
+            }
+            sysret = system( scall );
+            if ( sysret < 0 )
+            {
+		printf("\033[31m\033[1mFailed to execute awk. This is all that is known.\033[0m\n");
+    		exit(1);
+            }
+            stdin = freopen("/tmp/plot_temp_BbkuJ0IMQ0I3eTM8jv4TeQ1YjwoFhbM", "r", stdin);
+
+            while( fgets( line, 499999, stdin ) != NULL )
+            {
+            if ( (columns = sscanf( line, "%f %f %f %f", &junk, &junk, &junk, &junk)) >= 1 )
+                    break;
+            
+            printf("\033[37m\033[1mCaution: header line skipped:\033[0m %s", line );	
+            }	
+
+        }
 
 
 

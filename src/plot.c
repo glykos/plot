@@ -70,6 +70,8 @@
 extern void  arcxf              (  Coord,  Coord,  Coord,  Coord, Angle, Angle );
 void 	sort( int n, float *ra);
 void    welford(int N, float *data);
+void    myexit( int code );
+
 
 
 /* For color calculation */
@@ -214,7 +216,8 @@ int     DATA_SET = -1;
 int     HIST_EXACT = 0;
 
 int     RUNAWK = NO;
-
+char    tempfilename[1000] = "/tmp/plot_XXXXXX";
+int     HAVE_TEMPFILE = NO;
 
 
 
@@ -238,7 +241,7 @@ char	*argv[];
 		{
 			printf("This is plot v.%s\n", VERSION );
                         printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
-                        exit( 0 );
+                        myexit( 0 );
 		}
 	}
 	}
@@ -340,7 +343,7 @@ char	*argv[];
 		{
 			printf("\033[31m\033[1mToo many command line flags.\nForgotten input redirection maybe ?\033[0m\n");
 			printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
-			exit(1);
+			myexit(1);
 		}
 
 
@@ -412,7 +415,7 @@ char	*argv[];
 						{
 						printf("\033[31m\033[1mWrong arguments for submatrix.\033[0m\n");
 						printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
-						exit(1);
+						myexit(1);
 						}
 					}
 						
@@ -429,7 +432,7 @@ char	*argv[];
 						{
 						printf("\033[31m\033[1mWrong arguments for submatrix.\033[0m\n");
 						printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
-						exit(1);
+						myexit(1);
 						}
 					}
 					                                                
@@ -446,7 +449,7 @@ char	*argv[];
 						{
 						printf("\033[31m\033[1mWrong arguments for submatrix.\033[0m\n");
 						printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
-						exit(1);
+						myexit(1);
 						}
 					}
 					                                                
@@ -462,7 +465,7 @@ char	*argv[];
 					{
 					printf("\033[31m\033[1mColumn definition is wrong.\033[0m\n");
 					printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
-					exit(1);
+					myexit(1);
 					}
 
 										/* We sure have one column */
@@ -513,7 +516,7 @@ char	*argv[];
 					{
 					printf("\033[31m\033[1mColumn definition is wrong.\033[0m\n");
 					printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
-					exit(1);
+					myexit(1);
 					}
 					
 					argc = 1;
@@ -525,7 +528,7 @@ char	*argv[];
 					{
 					printf("\033[31m\033[1mColumn definition is wrong.\033[0m\n");
 					printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
-					exit(1);
+					myexit(1);
 					}
 
 										/* We sure have one column */
@@ -560,7 +563,7 @@ char	*argv[];
 						{
 						printf("\033[31m\033[1mToo many columns for histogram.\033[0m\n");
 						printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
-						exit(1);
+						myexit(1);
 						}
 
 
@@ -568,7 +571,7 @@ char	*argv[];
 					{
 					printf("\033[31m\033[1mColumn definition is wrong.\033[0m\n");
 					printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
-					exit(1);
+					myexit(1);
 					}
 					
 					DRAW_HISTOGRAM = YES;
@@ -580,7 +583,7 @@ char	*argv[];
 					printf("\033[31m\033[1mCommand line flag does not make sense.\033[0m\n");
 					printf("\033[31m\033[1mForgotten input redirection maybe ?\033[0m\n");
 					printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
-					exit(1);
+					myexit(1);
 				}
 		}
 
@@ -589,7 +592,7 @@ char	*argv[];
 		{
 			printf("\033[31m\033[1mThis is a unix filter. Use redirection or pipes.\033[0m\n");
 			printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
-			exit(1);
+			myexit(1);
 		}
 		
 
@@ -654,20 +657,23 @@ char	*argv[];
                 printf("\033[32m\033[1mWill attempt to use awk to select columns. This may not go as planned ...\033[0m\n");
             }
 
+            close( mkstemp( tempfilename ));
+            HAVE_TEMPFILE = YES;
+
             if ( HAVE_COL == 1 )
             {
-                sprintf( scall, "awk '{print $%d}' /dev/stdin > /tmp/plot_temp_BbkuJ0IMQ0I3eTM8jv4TeQ1YjwoFhbM", COL1 ); 
+                sprintf( scall, "awk '{print $%d}' /dev/stdin > %s", COL1, tempfilename ); 
                 COL1 = 1;
             }
             if ( HAVE_COL == 2 )
             {
-                sprintf( scall, "awk '{print $%d,$%d}' /dev/stdin > /tmp/plot_temp_BbkuJ0IMQ0I3eTM8jv4TeQ1YjwoFhbM", COL1, COL2 ); 
+                sprintf( scall, "awk '{print $%d,$%d}' /dev/stdin > %s", COL1, COL2, tempfilename ); 
                 COL1 = 1;
                 COL2 = 2;
             }
             if ( HAVE_COL == 3 )
             {
-                sprintf( scall, "awk '{print $%d,$%d,$%d}' /dev/stdin > /tmp/plot_temp_BbkuJ0IMQ0I3eTM8jv4TeQ1YjwoFhbM", COL1, COL2, COL3 ); 
+                sprintf( scall, "awk '{print $%d,$%d,$%d}' /dev/stdin > %s", COL1, COL2, COL3, tempfilename ); 
                 COL1 = 1;
                 COL2 = 2;
                 COL2 = 3;
@@ -676,9 +682,9 @@ char	*argv[];
             if ( sysret < 0 )
             {
 		printf("\033[31m\033[1mFailed to execute awk. This is all that is known.\033[0m\n");
-    		exit(1);
+    		myexit(1);
             }
-            stdin = freopen("/tmp/plot_temp_BbkuJ0IMQ0I3eTM8jv4TeQ1YjwoFhbM", "r", stdin);
+            stdin = freopen( tempfilename , "r", stdin);
 
             while( fgets( line, 499999, stdin ) != NULL )
             {
@@ -734,7 +740,7 @@ char	*argv[];
 		{
 			printf("\033[31m\033[1mNo such column (%d). Max is %d.\033[0m\n", COL1, tot_col);
 			printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
-			exit(1);		
+			myexit(1);		
 		}
 
 	/* Grab first number */
@@ -762,7 +768,7 @@ char	*argv[];
                                 if ( isnan(val) || isinf(val) )
                                   {
                                     printf("\033[31m\033[1mData appear to contain one or more 'NaN' and/or 'Inf'. Goodbye.\033[0m\n");
-                                    exit(1);
+                                    myexit(1);
                                   }
                                 
 				mat[i] = val;
@@ -774,7 +780,7 @@ char	*argv[];
 			{
 				printf("\033[31m\033[1mNumber of columns in matrix not constant ? Abort.\033[0m\n");
 				printf("\033[32m\033[1mDocs at : http://utopia.duth.gr/glykos/plot/\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 
 		x[N] = N+1;
@@ -842,7 +848,7 @@ char	*argv[];
 	        if ( y[i] <= 0 || x[i] <= 0 )
 			{
 				printf("\033[31m\033[1mLogarithm requested but negative values present ? Abort.\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 	        y[i] = log( y[i] );
 	        x[i] = log( x[i] );
@@ -855,7 +861,7 @@ char	*argv[];
 	        if ( y[i] <= 0 )
 			{
 				printf("\033[31m\033[1mLogarithm requested but negative values present ? Abort.\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 	        y[i] = log( y[i] );
 	      }
@@ -898,7 +904,7 @@ char	*argv[];
 			if ( h_N < 2 )
 			{
 				printf("Not enough data for drawing a histogram. Goodbye.\n\n");
-				exit(1);
+				myexit(1);
 			}
 			fprintf(stderr, "\033[31m\033[1mFreedman-Diaconis rule failed. Be skeptical.\033[0m\n");			
 		}
@@ -906,7 +912,7 @@ char	*argv[];
 		if ( h_N < 2 )
 			{
 				printf("Not enough data for drawing a histogram. Goodbye.\n\n");
-				exit(1);
+				myexit(1);
 			}
 			
 		if ( h_N > 500 )
@@ -923,13 +929,13 @@ char	*argv[];
 	        if ( step <= 0 )
 	        {
 	            printf("\033[31m\033[1mThe width chosen for the histogram bins must be greater than zero.\033[0m\n");
-	            exit(1);
+	            myexit(1);
 	        }
 	        h_N  = (int)((max-min) / step + 0.50 );
 	        if ( h_N > 999 )
 	          {
 	            printf("\033[31m\033[1mThe width chosen for the histogram bins is too small. Increase.\033[0m\n");
-	            exit(1);
+	            myexit(1);
 	          }
 	        step = (max-min) / h_N;
 	        }
@@ -945,7 +951,7 @@ char	*argv[];
 		if ( step == 0 )
 			{
 				printf("\033[31m\033[1mConstant y values ? Goodbye.\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 
                 x_inter = vector( 0, MAXN+STEP );
@@ -1054,7 +1060,7 @@ char	*argv[];
 	if ( COL1 > tot_col || COL2 > tot_col )
 		{
 			printf("\033[31m\033[1mNo such column. Max is %d.\033[0m\n", tot_col);
-			exit(1);		
+			myexit(1);		
 		}
 
 
@@ -1082,7 +1088,7 @@ char	*argv[];
                                 if ( isnan(val) || isinf(val) )
                                   {
                                     printf("\033[31m\033[1mData appear to contain one or more 'NaN' and/or 'Inf'. Goodbye.\033[0m\n");
-                                    exit(1);
+                                    myexit(1);
                                   }
 				mat[i] = val;
 			}
@@ -1092,7 +1098,7 @@ char	*argv[];
 		else if ( i != tot_col )
 			{
 				printf("\033[31m\033[1mNumber of columns in matrix not constant ? Abort.\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 
 		x[N] = mat[ COL1-1 ];
@@ -1134,7 +1140,7 @@ char	*argv[];
 			if ( isnan(x[N]) || isinf(x[N]) || isnan(y[N]) || isinf(y[N]) )
 				{
                                 printf("\033[31m\033[1mData appear to contain one or more 'NaN' and/or 'Inf'. Goodbye.\033[0m\n");
-                                exit(1);
+                                myexit(1);
                                 }
 			N++;
 			if ( N == MAXN-1 )
@@ -1172,7 +1178,7 @@ char	*argv[];
 	        if ( y[i] <= 0 || x[i] <= 0 )
 			{
 				printf("\033[31m\033[1mLogarithm requested but negative values present ? Abort.\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 	        y[i] = log( y[i] );
 	        x[i] = log( x[i] );
@@ -1185,7 +1191,7 @@ char	*argv[];
 	        if ( y[i] <= 0 )
 			{
 				printf("\033[31m\033[1mLogarithm requested but negative values present ? Abort.\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 	        y[i] = log( y[i] );
 	      }
@@ -1225,7 +1231,7 @@ char	*argv[];
 			if ( h_N < 2 )
 			{
 				printf("Not enough data for drawing a histogram. Goodbye.\n\n");
-				exit(1);
+				myexit(1);
 			}
 			fprintf(stderr, "\033[31m\033[1mFreedman-Diaconis rule failed. Be skeptical.\033[0m\n");			
 		}
@@ -1233,7 +1239,7 @@ char	*argv[];
 		if ( h_N < 2 )
 			{
 				printf("Not enough data for drawing a histogram. Goodbye.\n\n");
-				exit(1);
+				myexit(1);
 			}
 			
 		if ( h_N > 500 )
@@ -1251,7 +1257,7 @@ char	*argv[];
 	        if ( h_N > 999 )
 	          {
 	            printf("\033[31m\033[1mThe width chosen for the histogram bins is too small. Increase.\033[0m\n");
-	            exit(1);
+	            myexit(1);
 	          }
 	        step = (max-min) / h_N;
 	        }
@@ -1266,7 +1272,7 @@ char	*argv[];
 		if ( step == 0 )
 			{
 				printf("\033[31m\033[1mConstant y values ? Goodbye.\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 
                 x_inter = vector( 0, MAXN+STEP );
@@ -1359,7 +1365,7 @@ char	*argv[];
 			if ( isnan(x[N]) || isinf(x[N]) || isnan(y[N]) || isinf(y[N]) )
 				{
                                 printf("\033[31m\033[1mData appear to contain one or more 'NaN' and/or 'Inf'. Goodbye.\033[0m\n");
-                                exit(1);
+                                myexit(1);
                                 }
 
 			N++;
@@ -1399,7 +1405,7 @@ char	*argv[];
 	        if ( y[i] <= 0 || x[i] <= 0 )
 			{
 				printf("\033[31m\033[1mLogarithm requested but negative values present ? Abort.\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 	        y[i] = log( y[i] );
 	        x[i] = log( x[i] );
@@ -1412,7 +1418,7 @@ char	*argv[];
 	        if ( y[i] <= 0 )
 			{
 				printf("\033[31m\033[1mLogarithm requested but negative values present ? Abort.\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 	        y[i] = log( y[i] );
 	      }
@@ -1450,7 +1456,7 @@ char	*argv[];
 			if ( h_N < 2 )
 			{
 				printf("Not enough data for drawing a histogram. Goodbye.\n\n");
-				exit(1);
+				myexit(1);
 			}
 			fprintf(stderr, "\033[31m\033[1mFreedman-Diaconis rule failed. Be skeptical.\033[0m\n");			
 		}
@@ -1458,7 +1464,7 @@ char	*argv[];
 		if ( h_N < 2 )
 			{
 				printf("Not enough data for drawing a histogram. Goodbye.\n\n");
-				exit(1);
+				myexit(1);
 			}
 			
 		if ( h_N > 500 )
@@ -1476,7 +1482,7 @@ char	*argv[];
 	        if ( h_N > 999 )
 	          {
 	            printf("\033[31m\033[1mThe width chosen for the histogram bins is too small. Increase.\033[0m\n");
-	            exit(1);
+	            myexit(1);
 	          }
 	        step = (max-min) / h_N;
 	        }
@@ -1491,7 +1497,7 @@ char	*argv[];
 		if ( step == 0 )
 			{
 				printf("\033[31m\033[1mConstant y values ? Goodbye.\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 
                 x_inter = vector( 0, MAXN+STEP );
@@ -1601,7 +1607,7 @@ char	*argv[];
 	if ( COL1 > tot_col || COL2 > tot_col || COL3 > tot_col )
 		{
 			printf("\033[31m\033[1mNo such column. Max is %d.\033[0m\n", tot_col);
-			exit(1);		
+			myexit(1);		
 		}
 
 
@@ -1630,7 +1636,7 @@ char	*argv[];
                                 if ( isnan(val) || isinf(val) )
                                   {
                                     printf("\033[31m\033[1mData appear to contain one or more 'NaN' and/or 'Inf'. Goodbye.\033[0m\n");
-                                    exit(1);
+                                    myexit(1);
                                   }
 				mat[i] = val;
 			}
@@ -1640,7 +1646,7 @@ char	*argv[];
 		else if ( i != tot_col )
 			{
 				printf("\033[31m\033[1mNumber of columns in matrix not constant ? Abort.\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 
 		x[N] = mat[ COL1-1 ];
@@ -1712,7 +1718,7 @@ char	*argv[];
 	        if ( y[i] <= 0 || x[i] <= 0 || z[i] <= 0 )
 			{
 				printf("\033[31m\033[1mLogarithm requested but negative values present ? Abort.\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 	        y[i] = log( y[i] );
 	        x[i] = log( x[i] );
@@ -1726,7 +1732,7 @@ char	*argv[];
 	        if ( y[i] <= 0 || z[i] <= 0 )
 			{
 				printf("\033[31m\033[1mLogarithm requested but negative values present ? Abort.\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 	        y[i] = log( y[i] );
 	        z[i] = log( z[i] );
@@ -1781,7 +1787,7 @@ char	*argv[];
 						FIRST_REDRAW = NO;
 				}
 			if ( dev == QKEY )
-				exit( 0 );
+				myexit( 0 );
 			if ( dev == PKEY )
 			      {
 				gl2ppm("plot.ppm");
@@ -2123,7 +2129,7 @@ char	*argv[];
 						FIRST_REDRAW = NO;
 				}
 			if ( dev == QKEY )
-				exit( 0 );
+				myexit( 0 );
 			if ( dev == PKEY )
 				gl2ppm("plot.ppm");
 			if ( dev == DKEY )
@@ -2404,7 +2410,7 @@ char	*argv[];
 						FIRST_REDRAW = NO;
 				}
 			if ( dev == QKEY )
-				exit( 0 );
+				myexit( 0 );
 			if ( dev == PKEY )
 				gl2ppm("plot.ppm");
 			if ( dev == DKEY )
@@ -2708,7 +2714,7 @@ void	two_columns()
 	if ( N < 2 )
 		{
                         printf("\033[31m\033[1mOnly one point ? Abort.\033[0m\n");
-                        exit( 1 );
+                        myexit( 1 );
 		}
 	if ( maxx == minx )
 		{
@@ -2761,7 +2767,7 @@ void	two_columns()
         if ( winid == -1 )
                 {
                         printf("\033[37m\033[1mCan't open graphics window. Abort.\033[0m\n");
-                        exit( 1 );
+                        myexit( 1 );
 		}
 		
         winset ( winid );
@@ -3265,7 +3271,7 @@ void	draw_density()
 	if ( N < 2 )
 		{
                         printf("\033[31m\033[1mOnly one point ? Abort.\033[0m\n");
-                        exit( 1 );
+                        myexit( 1 );
 		}
 
 
@@ -3304,7 +3310,7 @@ void	draw_density()
         if ( winid == -1 )
                 {
                         printf("\033[37m\033[1mCan't open graphics window. Abort.\033[0m\n");
-                        exit( 1 );
+                        myexit( 1 );
 		}
 		
         winset ( winid );
@@ -3922,7 +3928,7 @@ void	three_columns()
 	if ( N < 2 )
 		{
                         printf("\033[31m\033[1mOnly one point ? Abort.\033[0m\n");
-                        exit( 1 );
+                        myexit( 1 );
 		}
 	if ( maxx == minx )
 		{
@@ -3962,7 +3968,7 @@ void	three_columns()
         if ( winid == -1 )
                 {
                         printf("\033[37m\033[1mCan't open graphics window. Abort.\033[0m\n");
-                        exit( 1 );
+                        myexit( 1 );
 		}
 		
         winset ( winid );
@@ -4628,7 +4634,7 @@ void contours()
 	if ( strlen( line ) > 499997 )
 		{
 			printf("\033[31m\033[1mLine longer than half a million characters ? Abort.\033[0m\n");
-			exit(1);
+			myexit(1);
 		}
 		
 	if ( (columns = sscanf( line, "%f %f %f %f", &junk, &junk, &junk, &junk)) >= 1 )
@@ -4674,7 +4680,7 @@ void contours()
                                 if ( isnan(val) || isinf(val) )
                                   {
                                     printf("\033[31m\033[1mData appear to contain one or more 'NaN' and/or 'Inf'. Goodbye.\033[0m\n");
-                                    exit(1);
+                                    myexit(1);
                                   }
 				mat[i+1][lines+1] = val;
 			}
@@ -4684,7 +4690,7 @@ void contours()
 		else if ( i != columns )
 			{
 				printf("\033[31m\033[1mNumber of columns in matrix not constant ? Abort.\033[0m\n");
-				exit(1);
+				myexit(1);
 			}
 		lines++;
 
@@ -4720,7 +4726,7 @@ void contours()
 	    if ( mat[i][k] <= 0 )
 	      {
 		printf("\033[31m\033[1mLogarithm requested but negative values present ? Abort.\033[0m\n");
-		exit(1);
+		myexit(1);
 	      }
             mat[i][k] = log( mat[i][k] );
           }
@@ -4744,7 +4750,7 @@ void contours()
 				if ( sourcec < 1 || sourcec > columns || sourcel < 1 || sourcel > lines )
 					{
 					printf("\033[31m\033[1mWrong size-origin combination for submatrix.\033[0m\n");
-					exit(1);
+					myexit(1);
 					}
 				
 				mat[ii][kk] = mat[sourcec][sourcel];
@@ -4774,7 +4780,7 @@ void contours()
 	if ( columns <= 1 || lines <= 1 )
 		{
 			printf("\033[31m\033[1mNothing to plot.\033[0m\n");
-			exit(1);
+			myexit(1);
 		}
         
 
@@ -5041,7 +5047,7 @@ void contours()
         if ( winid == -1 )
                 {
                         printf("\033[31m\033[1mCan't open graphics window. Abort.\033[0m\n");
-                        exit( 1 );
+                        myexit( 1 );
 		}
 		
         winset ( winid );
@@ -5122,7 +5128,7 @@ void contours()
 					qreset();
 				}
 			if ( dev == QKEY )
-				exit( 0 );
+				myexit( 0 );
 			if ( dev == PKEY )
 				gl2ppm("plot.ppm");
 			if ( dev == LEFTMOUSE && IN_ZOOM == NO )
@@ -5323,7 +5329,7 @@ void contours()
 
 
 
-	exit(1);
+	myexit(1);
 }
 
 
@@ -5604,7 +5610,7 @@ void free_vector(float *v, long nl, long nh)
 void    	nrerror( char error_text[])
 {
 	printf("\n\n%s\n\n", &error_text[0] );
-	exit( 1 );
+	myexit( 1 );
 }
 
 float	**matrix( long nrl, long nrh, long ncl, long nch )
@@ -6094,3 +6100,15 @@ void DFT(int m,float *y1)
    return;
 }
 
+
+
+void myexit( code )
+int code;
+{
+    if ( HAVE_TEMPFILE == YES )
+        remove( tempfilename );
+
+    exit( code );
+
+
+}

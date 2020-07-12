@@ -214,6 +214,7 @@ float	*data_DFT2;
 int	PLOT_LIGHTGRID = 0;
 int     DATA_SET = -1;
 int     HIST_EXACT = 0;
+int     LARGE_LABELS = 0;
 
 int     RUNAWK = NO;
 char    tempfilename[1000] = "/tmp/plot_XXXXXX";
@@ -385,6 +386,14 @@ char	*argv[];
 				{
 					DRAW_HISTOGRAM = YES;
 					CUMM_HIST = YES;
+					argc = 1;
+				}
+			else
+			if ( strncasecmp( argv[1], "-HCS", 4 ) == 0 && strlen( argv[1] ) == 4 )
+				{
+					DRAW_HISTOGRAM = YES;
+					CUMM_HIST = YES;
+                                        SAVE_HIST = YES;
 					argc = 1;
 				}
 			else
@@ -615,6 +624,9 @@ char	*argv[];
         if ( getenv("PLOT_HIST_EXACT") )
             HIST_EXACT = 1;
 
+        if ( getenv("LARGE_LABELS") )
+            LARGE_LABELS = 1;
+        
         if ( getenv("PLOT_LIGHTGRID") )
             PLOT_LIGHTGRID = 0;
         else
@@ -867,7 +879,7 @@ char	*argv[];
 	      }
           }
 
-        if ( N > 10000 )
+        if ( N > 10000 && DRAW_HISTOGRAM == NO )
         {   
             dots = 1;
         }
@@ -1003,6 +1015,17 @@ char	*argv[];
 				y[i] = prev + y[i];
 				prev = y[i];
 			}
+                    
+                    if ( AUTOSCALE == YES )
+                    {
+                        float   maxcum;
+
+                        maxcum = y[i-1];
+                        for ( i=0 ; i < h_N ; i++ )
+                            y[i] /= maxcum;
+
+                    }
+
 		  }
 
 		if ( SAVE_HIST == YES)
@@ -1165,7 +1188,7 @@ char	*argv[];
 
 
 
-        if ( N > 10000 )
+        if ( N > 10000 && DRAW_HISTOGRAM == NO )
         {   
             dots = 1;
         }
@@ -1325,6 +1348,16 @@ char	*argv[];
 				y[i] = prev + y[i];
 				prev = y[i];
 			}
+                    
+                    if ( AUTOSCALE == YES )
+                    {
+                        float   maxcum;
+
+                        maxcum = y[i-1];
+                        for ( i=0 ; i < h_N ; i++ )
+                            y[i] /= maxcum;
+
+                    }
 		  }
 
 		if ( SAVE_HIST == YES)
@@ -1393,7 +1426,7 @@ char	*argv[];
 		}
 
 
-        if ( N > 10000 )
+        if ( N > 10000 && DRAW_HISTOGRAM == NO )
         {   
             dots = 1;
         }
@@ -1550,6 +1583,16 @@ char	*argv[];
 				y[i] = prev + y[i];
 				prev = y[i];
 			}
+                    
+                    if ( AUTOSCALE == YES )
+                    {
+                        float   maxcum;
+
+                        maxcum = y[i-1];
+                        for ( i=0 ; i < h_N ; i++ )
+                            y[i] /= maxcum;
+
+                    }
 		  }
 
 		if ( SAVE_HIST == YES)
@@ -1706,7 +1749,7 @@ char	*argv[];
 
 	}
 
-        if ( N > 10000 )
+        if ( N > 10000 && DRAW_HISTOGRAM == NO )
         {   
             dots = 1;
         }
@@ -2779,7 +2822,10 @@ void	two_columns()
 	gconfig();
 	color( 0 );
 	clear();
-        loadXfont(4711, "fixed");  
+        if ( LARGE_LABELS == 0 )
+            loadXfont(4711, "fixed");
+        else
+            loadXfont(4711, "10x20");
         font(4711);
         color(7);
         cmov2( minx, miny );
@@ -3322,7 +3368,10 @@ void	draw_density()
 	gconfig();
 	color( 0 );
 	clear();
-        loadXfont(4711, "fixed");  
+        if ( LARGE_LABELS == 0 )
+            loadXfont(4711, "fixed");
+        else
+            loadXfont(4711, "10x20");
         font(4711);
         color(7);
         cmov2( minx, miny );
@@ -3980,7 +4029,10 @@ void	three_columns()
 	gconfig();
 	color( 0 );
 	clear();
-        loadXfont(4711, "fixed");  
+        if ( LARGE_LABELS == 0 )
+            loadXfont(4711, "fixed");
+        else
+            loadXfont(4711, "10x20");
         font(4711);
         color(7);
         cmov2( minx, miny );
@@ -5084,7 +5136,10 @@ void contours()
 	qdevice(MINUSKEY);
 	qdevice(EQUALKEY);
 
-        loadXfont(4711, "fixed");  
+        if ( LARGE_LABELS == 0 )
+            loadXfont(4711, "fixed");
+        else
+            loadXfont(4711, "10x20");
         font(4711);
         if ( COLOR == YES )
           color(120);

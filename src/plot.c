@@ -4885,8 +4885,8 @@ void contours()
 		}
 	
 	mat[0][0] = mat[1][1];
-	mat[0][lines+1] = mat[0][lines];
-	mat[columns+1][0] = mat[columns][0];
+	mat[0][lines+1] = mat[1][lines];
+	mat[columns+1][0] = mat[columns][1];
 	mat[columns+1][lines+1] = mat[columns][lines];
 	
 

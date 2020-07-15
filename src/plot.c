@@ -220,6 +220,10 @@ int     RUNAWK = NO;
 char    tempfilename[1000] = "/tmp/plot_XXXXXX";
 int     HAVE_TEMPFILE = NO;
 
+int     SECTIONS = 1;
+int     SECTION = 0;
+int	mult = 0;
+int	ori_col, ori_lin;
 
 
 int main(argc,argv)
@@ -263,6 +267,31 @@ char	*argv[];
 	}
 	}
 
+
+	if ( argc >= 1 )
+	{
+	for ( i=1 ; i < argc ; i++ )
+	{
+		if ( strncasecmp( argv[i], "-S", 2 ) == 0 && strlen( argv[i] ) == 2 )
+		{
+                        if ( sscanf( argv[i+1], "%d", &SECTIONS ) != 1 || SECTIONS < 1 )
+                            {
+			        printf("\033[31m\033[1mExpected a positive integer after the -s flag.\033[0m\n");
+			        myexit(1);
+                            }
+			for ( k=i+1 ; k < argc ; k++ )
+				{
+				strcpy( argv[k-1], argv[k] );
+				}
+                        argc--;
+			for ( k=i+1 ; k < argc ; k++ )
+				{
+				strcpy( argv[k-1], argv[k] );
+				}
+			argc--;
+		}
+	}
+	}
 
 
 	if ( argc >= 1 )
@@ -4669,7 +4698,6 @@ void contours()
 	char 	*p;
 	float	junk, val;
 	int	i, k;
-	int	mult = 0;
 	int	ii, kk=0;
 	double	xfrac, yfrac;
 	FILE 	*out;
@@ -4677,7 +4705,7 @@ void contours()
 	int	wx, wy;
 	short 	data;
 	long	dev;
-	int	ori_col, ori_lin;
+
 
 
 
@@ -4837,7 +4865,7 @@ void contours()
         
 
 
-	if ( (float)(columns) / (lines) > 10.0 || (float)(columns) / (lines) < 0.10 )
+	if ( ((float)(columns) / (lines) > 10.0 || (float)(columns) / (lines) < 0.10) && SECTIONS < 2 )
 		{
 		printf("\033[37m\033[1mNice matrix (%dx%d). Expect problems ...\033[0m\n", columns, lines);
 		}
@@ -4862,8 +4890,6 @@ void contours()
 	mat[columns+1][lines+1] = mat[columns][lines];
 	
 
-	
-
 /* 	for ( i=0 ; i <= lines+1 ; i++ )
 		{
 			for ( k=0 ; k <= columns+1 ; k++ )
@@ -4877,12 +4903,12 @@ void contours()
         mult = 1;
 	ori_col = columns;
 	ori_lin = lines;
-	if ( columns < SMALLM || lines < SMALLM )
+	if ( columns < SMALLM || (lines/SECTIONS) < SMALLM )
 	{
-		if ( (SMALLM / lines) > (SMALLM / columns) )
+		if ( (SMALLM / (lines/SECTIONS)) > (SMALLM / columns) )
 			mult = (int)( SMALLM / (columns-1) + 0.50) + 1;
 		else
-			mult = (int)( SMALLM / (lines-1) + 0.50) + 1;
+			mult = (int)( SMALLM / ((lines/SECTIONS)-1) + 0.50) + 1;
 		
 		if ( VERBOSE )			
 		printf("\033[37m\033[1mBicubic interpolation to %dx%d ...\033[0m\n", mult*(columns-1), mult*(lines-1) );
@@ -4892,9 +4918,16 @@ void contours()
                 mat_inter   = mat;
                 inter_inter = inter;
 
+                if ( SECTIONS <= 1 )
+                {
                 mat   = matrix( 0, 2*mult*(columns-1)+1, 0, 2*mult*(lines-1)+1 );
-                inter = matrix( 0, 2*mult*(columns-1)+1, 0, 2*mult*(lines-1)+1 );      
-
+                inter = matrix( 0, 2*mult*(columns-1)+1, 0, 2*mult*(lines-1)+1 );
+                }
+                else
+                {
+                mat   = matrix( 0, mult*(columns+1)+1, 0, mult*(lines+1)+1 );
+                inter = matrix( 0, mult*(columns+1)+1, 0, mult*(lines+1)+1 );      
+                }
 
                 for ( ii=0 ; ii <= columns+1 ; ii++ )
                 for ( kk=0 ; kk <= lines+1 ; kk++ )
@@ -4964,8 +4997,9 @@ void contours()
 		
 
 		/* Update number of columns and lines */
-		columns = mult*(columns-1);
+                columns = mult*(columns-1);
 		lines = mult*(lines-1);
+
 	}
 	else
 	{
@@ -5069,6 +5103,8 @@ void contours()
 		}
 
 
+        lines = (lines - (ori_lin%SECTIONS>0?0:1)*(SECTIONS-1)*mult) / SECTIONS;
+
 
 	/* Initial window size in pixels ... */
 	scale = 1.0;
@@ -5131,10 +5167,13 @@ void contours()
 	qdevice(PKEY);
 	qdevice(LEFTMOUSE);
 	qdevice(NKEY);
-	qdevice(ZKEY);
+        qdevice(ZKEY);
 	qdevice(CKEY);
 	qdevice(MINUSKEY);
 	qdevice(EQUALKEY);
+        qdevice(DOWNARROWKEY);
+        qdevice(UPARROWKEY);
+
 
         if ( LARGE_LABELS == 0 )
             loadXfont(4711, "fixed");
@@ -5182,6 +5221,26 @@ void contours()
 					usleep(500000);
 					qreset();
 				}
+                        if ( dev == DOWNARROWKEY )
+                                {
+					SECTION++;
+                                        if ( SECTION >= SECTIONS )
+                                            SECTION = SECTIONS-1;
+					reshapeviewport();
+					do_plot_contours();
+                                        usleep(500000);
+					qreset();
+                                }
+                        if ( dev == UPARROWKEY )
+                                {
+					SECTION--;
+                                        if ( SECTION <= 0 )
+                                            SECTION = 0;
+					reshapeviewport();
+					do_plot_contours();
+                                        usleep(500000);
+					qreset();
+                                }
 			if ( dev == QKEY )
 				myexit( 0 );
 			if ( dev == PKEY )
@@ -5228,7 +5287,7 @@ void contours()
 					usleep(500000);
 					qreset();
 				}
-			if ( dev == ZKEY )
+			if ( dev == ZKEY && SECTIONS <= 1 )
 				{
 					Screencoord	left, right, bottom, top;
 					float	xpos, ypos;
@@ -5400,8 +5459,19 @@ void 	do_plot_contours()
           color(120);
         else
           color(7);
+        if ( LARGE_LABELS == 0 )
+             loadXfont(4711, "fixed");
+        else
+             loadXfont(4711, "10x20");
+        font(4711);
         cmov2( minx, miny );
-        charstr( "Rendering ..." );
+        if ( SECTIONS > 1 )
+            {
+                sprintf( label, "Rendering Section %d", SECTION+1 );
+                charstr( label );
+            }
+        else
+            charstr( "Rendering ..." );
         gflush();
         gsync();
         backbuffer( 1 );
@@ -5409,12 +5479,13 @@ void 	do_plot_contours()
         color( 0 );
         clear();
 
+
         if ( COLOR == YES )
         {
 	for ( ii=0 ; ii < columns ; ii++ )
-	for ( kk=0 ; kk < lines   ; kk++ )
+	for ( kk=0 ; kk < lines ; kk++ )
 		{	
-		        v1 = (int)   ( 255.0 * ( inter[ii][kk] - min ) / ( max - min ) + 0.50 );
+		        v1 = (int)   ( 255.0 * ( inter[ii][kk+(lines+(ori_lin%SECTIONS>0?0:1)*mult)*SECTION] - min ) / ( max - min ) + 0.50 );
 		        if ( v1 > 255 )
 		          v1 = 255;
                         if ( v1 < 0 )
@@ -5449,8 +5520,8 @@ void 	do_plot_contours()
 	for ( ii=0 ; ii < columns-1 ; ii++ )
 	for ( kk=0 ; kk < lines   ; kk++ )
 		{
-			vv1 = inter[ii][kk];
-			vv2 = inter[ii+1][kk];
+			vv1 = inter[ii][kk+(lines+(ori_lin%SECTIONS>0?0:1)*mult)*SECTION];
+			vv2 = inter[ii+1][kk+(lines+(ori_lin%SECTIONS>0?0:1)*mult)*SECTION];
 			prod = (vv1 - mean) * (vv2 - mean);
 			v1 = (int)((vv1 - mean) / (c_step*rmsd/2));
 			v2 = (int)((vv2 - mean) / (c_step*rmsd/2));
@@ -5475,8 +5546,8 @@ void 	do_plot_contours()
 	for ( ii=0 ; ii < columns   ; ii++ )
 	for ( kk=0 ; kk < lines-1   ; kk++ )
 		{
-			vv1 = inter[ii][kk];
-			vv2 = inter[ii][kk+1];
+			vv1 = inter[ii][kk+(lines+(ori_lin%SECTIONS>0?0:1)*mult)*SECTION];
+			vv2 = inter[ii][kk+(lines+(ori_lin%SECTIONS>0?0:1)*mult)*SECTION+1];
 			prod = (vv1 - mean) * (vv2 - mean);
 			v1 = (int)((vv1 - mean) / (c_step*rmsd/2));
 			v2 = (int)((vv2 - mean) / (c_step*rmsd/2));
@@ -5534,8 +5605,8 @@ void 	do_plot_contours()
 	for ( ii=0 ; ii < columns-1 ; ii++ )
 	for ( kk=0 ; kk < lines   ; kk++ )
 		{
-			vv1 = inter[ii][kk];
-			vv2 = inter[ii+1][kk];
+			vv1 = inter[ii][kk+(lines+(ori_lin%SECTIONS>0?0:1)*mult)*SECTION];
+			vv2 = inter[ii+1][kk+(lines+(ori_lin%SECTIONS>0?0:1)*mult)*SECTION];
 			prod = (vv1 - mean) * (vv2 - mean);
 			v1 = (int)((vv1 - mean) / (c_step*rmsd/2));
 			v2 = (int)((vv2 - mean) / (c_step*rmsd/2));
@@ -5560,8 +5631,8 @@ void 	do_plot_contours()
 	for ( ii=0 ; ii < columns   ; ii++ )
 	for ( kk=0 ; kk < lines-1   ; kk++ )
 		{
-			vv1 = inter[ii][kk];
-			vv2 = inter[ii][kk+1];
+			vv1 = inter[ii][kk+(lines+(ori_lin%SECTIONS>0?0:1)*mult)*SECTION];
+			vv2 = inter[ii][kk+(lines+(ori_lin%SECTIONS>0?0:1)*mult)*SECTION+1];
 			prod = (vv1 - mean) * (vv2 - mean);
 			v1 = (int)((vv1 - mean) / (c_step*rmsd/2));
 			v2 = (int)((vv2 - mean) / (c_step*rmsd/2));
@@ -6035,13 +6106,13 @@ void sort(int n, float *ra)
 		{
 			if ( (j < ir) && (ra[j] < ra[j + 1]) )
 				++j;				/* compare to the better underling */
-				if ( rra < ra[j] )	/* demote rra */
+			if ( rra < ra[j] )	/* demote rra */
 				{
 					ra[i] = ra[j];
 					j += (i = j);
 				}
-				else
-					j = ir + 1;		/* this is rra's level; set j to */
+			else
+			    	j = ir + 1;		/* this is rra's level; set j to */
 		}                           /* terminate the sift-down */
 		ra[i] = rra;				/* put rra into its slot */
 	}

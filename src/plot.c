@@ -225,6 +225,12 @@ int     SECTION = 0;
 int	mult = 0;
 int	ori_col, ori_lin;
 
+int     MINX_SIZE = 700;
+int     MINY_SIZE = 300;
+int     MINS_SIZE = 700;
+
+
+
 
 int main(argc,argv)
 int  	argc;
@@ -236,6 +242,37 @@ char	*argv[];
 	float	junk;
 	int	i, k;
 
+
+        if ( getenv("PLOT_LABELS") )
+          {
+            PLOT_LABELS = 0;
+            have_plot_labels = 0;
+          }
+        else
+          {
+            PLOT_LABELS = 1;
+            have_plot_labels = 1;
+          }
+        
+          
+        if ( getenv("PLOT_DOTS") )
+            dots = 1;
+            
+        if ( getenv("PLOT_HIST_EXACT") )
+            HIST_EXACT = 1;
+
+        if ( getenv("LARGE_LABELS") )
+            {
+                LARGE_LABELS = 1;
+                MINX_SIZE = 1400;
+                MINY_SIZE = 600;
+                MINS_SIZE = 900;
+            }
+        
+        if ( getenv("PLOT_LIGHTGRID") )
+            PLOT_LIGHTGRID = 0;
+        else
+            PLOT_LIGHTGRID = 1;
 
 
 	if ( argc >= 1 )
@@ -633,33 +670,6 @@ char	*argv[];
 			myexit(1);
 		}
 		
-
-
-        if ( getenv("PLOT_LABELS") )
-          {
-            PLOT_LABELS = 0;
-            have_plot_labels = 0;
-          }
-        else
-          {
-            PLOT_LABELS = 1;
-            have_plot_labels = 1;
-          }
-        
-          
-        if ( getenv("PLOT_DOTS") )
-            dots = 1;
-            
-        if ( getenv("PLOT_HIST_EXACT") )
-            HIST_EXACT = 1;
-
-        if ( getenv("LARGE_LABELS") )
-            LARGE_LABELS = 1;
-        
-        if ( getenv("PLOT_LIGHTGRID") )
-            PLOT_LIGHTGRID = 0;
-        else
-            PLOT_LIGHTGRID = 1;
 
 
         if ( RUNAWK == NO )
@@ -2834,7 +2844,7 @@ void	two_columns()
 
 	if ( FIRST == 0 )
 	{
-        minsize( 700, 300 );
+        minsize( MINX_SIZE, MINY_SIZE );
         winid = winopen( title );
         if ( winid == -1 )
                 {
@@ -3379,8 +3389,8 @@ void	draw_density()
 
 	if ( FIRST == 0 )
 	{
-        minsize( 700, 700 );
-        keepaspect( 700, 700 );
+        minsize( MINS_SIZE, MINS_SIZE );
+        keepaspect( MINS_SIZE, MINS_SIZE );
         winid = winopen( title );
         if ( winid == -1 )
                 {
@@ -4041,7 +4051,7 @@ void	three_columns()
 
 	if ( FIRST == 0 )
 	{
-        minsize( 700, 300 );
+        minsize( MINX_SIZE, MINY_SIZE );
         winid = winopen( title );
         if ( winid == -1 )
                 {
@@ -5110,13 +5120,13 @@ void contours()
 	scale = 1.0;
 	if ( columns > lines )
 	{
-		if ( columns > 700 )
-			scale = 700.0 / columns;
+		if ( columns > MINS_SIZE )
+			scale = (float)(MINS_SIZE) / columns;
 	}
 	else
 	{
-		if ( lines > 700 )
-			scale = 700.0 / lines;
+		if ( lines > MINS_SIZE )
+			scale = (float)(MINS_SIZE) / lines;
 	}	
 
 	wx = (int)(scale * columns + 0.50);

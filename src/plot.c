@@ -918,7 +918,7 @@ char	*argv[];
 	      }
           }
 
-        if ( N > 10000 && DRAW_HISTOGRAM == NO )
+        if ( N > 20000 && DRAW_HISTOGRAM == NO )
         {   
             dots = 1;
         }
@@ -1227,7 +1227,7 @@ char	*argv[];
 
 
 
-        if ( N > 10000 && DRAW_HISTOGRAM == NO )
+        if ( N > 20000 && DRAW_HISTOGRAM == NO )
         {   
             dots = 1;
         }
@@ -1465,7 +1465,7 @@ char	*argv[];
 		}
 
 
-        if ( N > 10000 && DRAW_HISTOGRAM == NO )
+        if ( N > 20000 && DRAW_HISTOGRAM == NO )
         {   
             dots = 1;
         }
@@ -1788,7 +1788,7 @@ char	*argv[];
 
 	}
 
-        if ( N > 10000 && DRAW_HISTOGRAM == NO )
+        if ( N > 20000 && DRAW_HISTOGRAM == NO )
         {   
             dots = 1;
         }
@@ -2225,6 +2225,14 @@ char	*argv[];
 			if ( dev == LKEY )
 				{
 				        PLOT_LABELS = PLOT_LABELS ^ 1;
+					reshapeviewport();
+					do_draw_density();
+					usleep(500000);
+					qreset();
+				}
+			if ( dev == FKEY )
+				{
+					filled_dots = filled_dots ^ 1;
 					reshapeviewport();
 					do_draw_density();
 					usleep(500000);
@@ -2750,7 +2758,10 @@ void	two_columns()
 
 
             if ( i == N )
-                ;
+            {
+                if ( current != DATA_SET )
+                    printf("\033[31m\033[1m\nCaution: requested data set not found! Will plot all data.\n\n\033[0m");
+            }
             else
             {
                     starting = i-1;
@@ -3407,6 +3418,10 @@ void	draw_density()
 	gconfig();
 	color( 0 );
 	clear();
+
+        if ( N < 2000 )
+            filled_dots = YES;
+
         if ( LARGE_LABELS == 0 )
             loadXfont(4711, "fixed");
         else
@@ -3422,6 +3437,7 @@ void	draw_density()
 	qdevice(QKEY);
 	qdevice(DKEY);
 	qdevice(LKEY);
+	qdevice(FKEY);
 	qdevice(PKEY);
 
 	qdevice(EQUALKEY);
@@ -3824,22 +3840,31 @@ void 	do_draw_density()
         mapcolor( 200  ,243, 146, 46 );
 	color( 200 );
 
+        getviewport( &left, &right, &bottom, &top );
+        
         if ( dots == NO )
         {
-	linewidth( 1 );
+
+        if ( filled_dots == YES )
+            for ( i=0 ; i < N ; i++ )
+                arcxf( x[i], y[i], 6.0*dx/(right-left), 6.0*dy/(top-bottom), 0, 3600 );
+
+        linewidth( 1 );
 	move2( x[0], y[0] );
 	for ( i=1 ; i < N ; i++ )
 		draw2( x[i], y[i] );
         }                
 	else
 	{
-
 	for ( i=0 ; i < N ; i++ )
 		{
 		  if ( COLOR_DOTS == YES )
 		    color( (int)(z[i])%7 + 1 );
 		  
-                  if ( x[i] >= minx && x[i] <= maxx && y[i] >= miny && y[i] <= maxy )
+                  if ( filled_dots == YES &&  x[i] >= minx && x[i] <= maxx && y[i] >= miny && y[i] <= maxy )
+                    arcxf( x[i], y[i], 6.0*dx/(right-left), 6.0*dy/(top-bottom), 0, 3600 );
+
+                  if ( filled_dots == NO && x[i] >= minx && x[i] <= maxx && y[i] >= miny && y[i] <= maxy )
 		    pnt2( x[i], y[i] );
                 }
 	}
@@ -3909,7 +3934,10 @@ void	three_columns()
 
 
             if ( i == N )
-                ;
+            {
+                if ( current != DATA_SET )
+                    printf("\033[31m\033[1m\nCaution: requested data set not found! Will plot all data.\n\n\033[0m");
+            }
             else
             {
                     starting = i-1;
@@ -5183,6 +5211,8 @@ void contours()
 	qdevice(EQUALKEY);
         qdevice(DOWNARROWKEY);
         qdevice(UPARROWKEY);
+        qdevice(PAGEUPKEY);
+        qdevice(PAGEDOWNKEY);
 
 
         if ( LARGE_LABELS == 0 )
@@ -5246,6 +5276,22 @@ void contours()
 					SECTION--;
                                         if ( SECTION <= 0 )
                                             SECTION = 0;
+					reshapeviewport();
+					do_plot_contours();
+                                        usleep(500000);
+					qreset();
+                                }
+                        if ( dev == PAGEDOWNKEY )
+                                {
+					SECTION = SECTIONS-1;;
+					reshapeviewport();
+					do_plot_contours();
+                                        usleep(500000);
+					qreset();
+                                }
+                        if ( dev == PAGEUPKEY )
+                                {
+					SECTION = 0;
 					reshapeviewport();
 					do_plot_contours();
                                         usleep(500000);

@@ -229,7 +229,7 @@ int     MINX_SIZE = 700;
 int     MINY_SIZE = 300;
 int     MINS_SIZE = 700;
 
-
+int     CDIVI = 0;
 
 
 int main(argc,argv)
@@ -3849,6 +3849,7 @@ void 	do_draw_density()
             for ( i=0 ; i < N ; i++ )
                 arcxf( x[i], y[i], 6.0*dx/(right-left), 6.0*dy/(top-bottom), 0, 3600 );
 
+
         linewidth( 1 );
 	move2( x[0], y[0] );
 	for ( i=1 ; i < N ; i++ )
@@ -3858,8 +3859,9 @@ void 	do_draw_density()
 	{
 	for ( i=0 ; i < N ; i++ )
 		{
+
 		  if ( COLOR_DOTS == YES )
-		    color( (int)(z[i])%7 + 1 );
+		    color( (int)(z[i]+CDIVI)%7 + 1 );
 		  
                   if ( filled_dots == YES &&  x[i] >= minx && x[i] <= maxx && y[i] >= miny && y[i] <= maxy )
                     arcxf( x[i], y[i], 6.0*dx/(right-left), 6.0*dy/(top-bottom), 0, 3600 );
@@ -3872,6 +3874,11 @@ void 	do_draw_density()
 
 	if ( NOW_PLAYING >= 0 )
 	{
+        if ( CDIVI == 0 )
+            CDIVI = 1;
+        else
+            CDIVI = 0;
+
 	getviewport( &left, &right, &bottom, &top );
 	color( 6 );
 	for ( i=NOW_PLAYING-STEP_PLAYING+1 ; i <= NOW_PLAYING ; i++ )
